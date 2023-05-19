@@ -95,7 +95,9 @@ class IO <T>{
     public static IO<NullPointerException> printStack (ArrayList<Maybe<Integer>> a) {
         String text = ">";
         for (int i = 0; i < a.size();i++){
-            text += " " + (a.get(i).value.toString());
+            if (a.get(i).value == null){
+                text += " null";
+            } else text += " " + (a.get(i).value.toString());
         }
         System.out.println(text);
         return IO.mReturn(null);
