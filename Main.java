@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class Main{
 
     public static void main(String[] args) {
-        final IO<?> mainDo = IO.mBind(IO.putStrLn("Reverse Polish Notation Calculator (enter quit, drop, or divide):"),
+        final IO<?> mainDo = IO.mBind(IO.putStrLn("Reverse Polish Notation Calculator (enter quit, pop, push, divide):"),
             unUsed -> doBlock (new ArrayList<Maybe<Integer>>()));
     }
 
@@ -20,11 +20,23 @@ public class Main{
             case "quit":
             output = IO.mReturn(null);
             break;
-            case "drop":
-            output = IO.mReturn(null);
+            case "pop":
+            final ArrayList<Maybe<Integer>> new_stack = new ArrayList<Maybe<Integer>> (stack.subList(0, stack.size() - 1));
+            output = IO.mBind(IO.printStack(new_stack), unUsed ->
+             doBlock(new_stack));
             break;
             case "divide":
             output = IO.mReturn(null);
+            break;
+            case "push":
+            final IO<Integer> inputNum = IO.getInt();
+            output = IO.mBind(inputNum, a ->
+                IO.mBind(IO.printStack(stack), unused -> {
+                ArrayList<Maybe<Integer>> add_stack = stack;
+                stack.add(Maybe.mReturn(a));
+                return doBlock(add_stack);
+            }
+            ));
             break;
             default:
             output = IO.mBind(IO.putStrLn("Invalid, try again."), unUsed -> 
@@ -63,6 +75,17 @@ class IO <T>{
     }
     public static IO<String> getLine(){
         return IO.mReturn(scanner.nextLine());
+    }
+    public static IO<Integer> getInt(){
+        return IO.mReturn(scanner.nextInt());
+    }
+    public static IO<NullPointerException> printStack (ArrayList<Maybe<Integer>> a) {
+        String text = ">";
+        for (int i = 0; i < a.size();i++){
+            text += " " + (a.get(i).value.toString());
+        }
+        System.out.println(text);
+        return IO.mReturn(null);
     }
 }
 
