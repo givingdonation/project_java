@@ -21,22 +21,25 @@ public class Main{
             output = IO.mReturn(null);
             break;
             case "pop":
-            final ArrayList<Maybe<Integer>> new_stack = new ArrayList<Maybe<Integer>> (stack.subList(0, stack.size() - 1));
-            output = IO.mBind(IO.printStack(new_stack), unUsed ->
-             doBlock(new_stack));
+            final ArrayList<Maybe<Integer>> newStack = new ArrayList<Maybe<Integer>> (stack.subList(0, stack.size() - 1));
+            output = IO.mBind(IO.printStack(newStack), unUsed ->
+             doBlock(newStack));
             break;
             case "divide":
             output = IO.mReturn(null);
             break;
             case "push":
-            final IO<Integer> inputNum = IO.getInt();
-            output = IO.mBind(inputNum, a ->
-                IO.mBind(IO.printStack(stack), unused -> {
-                ArrayList<Maybe<Integer>> add_stack = stack;
-                stack.add(Maybe.mReturn(a));
-                return doBlock(add_stack);
-            }
-            ));
+            
+            output = IO.mBind(IO.getInt(), a -> {
+                final Function<ArrayList<Maybe<Integer>>,ArrayList<Maybe<Integer>>> stackAdder = stackIn -> {
+                    ArrayList<Maybe<Integer>> tempStack = stack;
+                    tempStack.add(Maybe.mReturn(a));
+                    return tempStack;
+                };
+                final ArrayList<Maybe<Integer>> addedStack = stackAdder.apply(stack);
+                //return IO.mBind(IO.printStack(stackAdder.apply(stack)), unused -> doBlock(stackAdder.apply(stack)));}
+                return IO.mBind(IO.printStack(addedStack), unused -> doBlock(addedStack));}
+            );
             break;
             default:
             output = IO.mBind(IO.putStrLn("Invalid, try again."), unUsed -> 
@@ -68,6 +71,7 @@ class IO <T>{
     }
 
     final static Scanner scanner = new Scanner(System.in);
+    final static Scanner intScanner = new Scanner(System.in);
 
     public static IO<NullPointerException> putStrLn(String a) {
         System.out.println(a);
@@ -77,7 +81,7 @@ class IO <T>{
         return IO.mReturn(scanner.nextLine());
     }
     public static IO<Integer> getInt(){
-        return IO.mReturn(scanner.nextInt());
+        return IO.mReturn(intScanner.hasNextInt() ? intScanner.nextInt() : null);
     }
     public static IO<NullPointerException> printStack (ArrayList<Maybe<Integer>> a) {
         String text = ">";
