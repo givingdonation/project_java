@@ -1,22 +1,39 @@
 import java.util.function.Function;
 import java.util.Scanner;
+import java.util.ArrayList;
 
 public class Main{
 
     public static void main(String[] args) {
-        
-        final Maybe<Integer> maybeInt2 = Maybe.mReturn(1);
-
-        final Maybe<Integer> maybeInt3 = Maybe.mBind(maybeInt2, x -> Maybe.mReturn(x + 1));
-        
-        final IO<?> mainDo = 
-            IO.mBind(IO.getLine(), a -> 
-            IO.mBind(IO.putStrLn(a), b ->
-            IO.mBind(IO.putStrLn(maybeInt3.value.toString()), c ->
-                     IO.putStrLn("hi")
-            )));
+        final IO<?> mainDo = IO.mBind(IO.putStrLn("Reverse Polish Notation Calculator (enter quit, drop, or divide):"),
+            unUsed -> doBlock (new ArrayList<Maybe<Integer>>()));
     }
 
+    public Maybe<Integer> divide (int a, int b){
+        return Maybe.mReturn((b == 0) ? null : a / b);
+    } 
+
+    public static IO<?> doBlock (ArrayList<Maybe<Integer>> stack){
+        return IO.mBind(IO.getLine(), opInputed -> {
+        final IO<?> output;
+        switch (opInputed.toLowerCase()){
+            case "quit":
+            output = IO.mReturn(null);
+            break;
+            case "drop":
+            output = IO.mReturn(null);
+            break;
+            case "divide":
+            output = IO.mReturn(null);
+            break;
+            default:
+            output = IO.mBind(IO.putStrLn("Invalid, try again."), unUsed -> 
+                doBlock(stack));
+            break;
+        }
+        return output;   
+        });
+    }
 }
 
 
@@ -33,23 +50,19 @@ class IO <T>{
         return newMb;
     }
 
-    final public T value;
+    final private T value;
     public IO (T itsValue){
         value = itsValue;
     }
 
-
-
+    final static Scanner scanner = new Scanner(System.in);
 
     public static IO<NullPointerException> putStrLn(String a) {
         System.out.println(a);
         return IO.mReturn(null);
     }
     public static IO<String> getLine(){
-        final Scanner myObj = new Scanner(System.in);
-        final String text = myObj.nextLine();
-        myObj.close();
-        return IO.mReturn(text);
+        return IO.mReturn(scanner.nextLine());
     }
 }
 
