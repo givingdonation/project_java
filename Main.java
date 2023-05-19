@@ -9,8 +9,11 @@ public class Main{
             unUsed -> doBlock (new ArrayList<Maybe<Integer>>()));
     }
 
-    public Maybe<Integer> divide (int a, int b){
-        return Maybe.mReturn((b == 0) ? null : a / b);
+    public static Maybe<Integer> divide (Maybe<Integer> ma, Maybe<Integer> mb){
+        //return Maybe.mReturn((b == 0) ? null : a / b);
+        return Maybe.mBind(ma, a -> 
+               Maybe.mBind(mb, b -> 
+               Maybe.mReturn((b == 0) ? null : a / b)));
     } 
 
     public static IO<?> doBlock (ArrayList<Maybe<Integer>> stack){
@@ -26,13 +29,19 @@ public class Main{
              doBlock(newStack));
             break;
             case "divide":
-            output = IO.mReturn(null);
+            final Function<ArrayList<Maybe<Integer>>,ArrayList<Maybe<Integer>>> stackDivAdder = stackIn -> {
+                ArrayList<Maybe<Integer>> tempStack = stackIn;
+                tempStack.add(divide(stack.get(stack.size() - 2),stack.get(stack.size() - 1)));
+                return tempStack;
+            };
+            final ArrayList<Maybe<Integer>> modStack = stackDivAdder.apply(new ArrayList<Maybe<Integer>>(stack.subList(0, stack.size() - 2)));
+            output = IO.mBind(IO.printStack(modStack), unused -> doBlock(modStack));
             break;
             case "push":
             
             output = IO.mBind(IO.getInt(), a -> {
                 final Function<ArrayList<Maybe<Integer>>,ArrayList<Maybe<Integer>>> stackAdder = stackIn -> {
-                    ArrayList<Maybe<Integer>> tempStack = stack;
+                    ArrayList<Maybe<Integer>> tempStack = stackIn;
                     tempStack.add(Maybe.mReturn(a));
                     return tempStack;
                 };
